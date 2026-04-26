@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>自分史ジェネレーター ✦ あなたの物語を形に</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Shippori+Mincho:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --deep: #0a0806;
+    --ink: #1a1208;
+    --gold: #c8a84b;
+    --gold-light: #e8cc7a;
+    --gold-pale: #f5e9c0;
+    --green: #2d5a27;
+    --green-light: #4a8a42;
+    --parchment: #fdf6e3;
+    --warm: rgba(200,168,75,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--deep);
+    color: var(--gold-pale);
+    font-family: 'Noto Serif JP', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 10%, rgba(45,90,39,0.12) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 90%, rgba(200,168,75,0.08) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* ヘッダー */
+  .header {
+    text-align: center;
+    margin-bottom: 44px;
+    animation: fadeDown 1s ease both;
+  }
+
+  .header-deco {
+    font-size: 11px;
+    letter-spacing: 0.45em;
+    color: var(--gold);
+    opacity: 0.6;
+    margin-bottom: 12px;
+  }
+
+  .title-main {
+    font-family: 'Shippori Mincho', serif;
+    font-size: clamp(28px, 7vw, 46px);
+    font-weight: 800;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    text-shadow: 0 0 40px rgba(200,168,75,0.25);
+    margin-bottom: 8px;
+  }
+
+  .title-sub {
+    font-size: 12px;
+    color: var(--gold-pale);
+    opacity: 0.5;
+    letter-spacing: 0.35em;
+    margin-bottom: 16px;
+  }
+
+  .title-desc {
+    font-size: 13px;
+    color: var(--gold-pale);
+    opacity: 0.7;
+    line-height: 1.9;
+  }
+
+  .header-line {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0;
+    justify-content: center;
+  }
+
+  .header-line span {
+    height: 1px;
+    width: 60px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  /* ステップ表示 */
+  .steps {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 36px;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .step-item {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+
+  .step-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(200,168,75,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: rgba(200,168,75,0.4);
+    transition: all 0.4s;
+    font-family: 'Shippori Mincho', serif;
+  }
+
+  .step-circle.active {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: rgba(200,168,75,0.1);
+    box-shadow: 0 0 12px rgba(200,168,75,0.2);
+  }
+
+  .step-circle.done {
+    border-color: var(--green-light);
+    color: var(--green-light);
+    background: rgba(74,138,66,0.1);
+  }
+
+  .step-line {
+    width: 32px;
+    height: 1px;
+    background: rgba(200,168,75,0.2);
+  }
+
+  .step-line.done { background: rgba(74,138,66,0.4); }
+
+  /* カード */
+  .card {
+    background: linear-gradient(135deg, rgba(200,168,75,0.06) 0%, rgba(10,8,6,0.7) 100%);
+    border: 1px solid rgba(200,168,75,0.2);
+    border-radius: 2px;
+    padding: 32px;
+    margin-bottom: 20px;
+    position: relative;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .card::before, .card::after {
+    content: '✦';
+    position: absolute;
+    color: var(--gold);
+    opacity: 0.3;
+    font-size: 9px;
+  }
+  .card::before { top: 8px; left: 12px; }
+  .card::after { bottom: 8px; right: 12px; }
+
+  .card-title {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 16px;
+    color: var(--gold);
+    letter-spacing: 0.25em;
+    margin-bottom: 6px;
+  }
+
+  .card-desc {
+    font-size: 12px;
+    color: var(--gold-pale);
+    opacity: 0.55;
+    letter-spacing: 0.1em;
+    margin-bottom: 24px;
+    line-height: 1.7;
+  }
+
+  .form-group {
+    margin-bottom: 18px;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 0.3em;
+    opacity: 0.8;
+    margin-bottom: 8px;
+  }
+
+  .form-group input, .form-group textarea, .form-group select {
+    background: rgba(200,168,75,0.05);
+    border: 1px solid rgba(200,168,75,0.25);
+    color: var(--gold-pale);
+    padding: 11px 14px;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 14px;
+    border-radius: 1px;
+    outline: none;
+    transition: border-color 0.3s, background 0.3s;
+    width: 100%;
+    -webkit-appearance: none;
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 90px;
+    line-height: 1.8;
+  }
+
+  .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+    border-color: var(--gold);
+    background: rgba(200,168,75,0.08);
+  }
+
+  .form-group select option { background: #1a1208; color: var(--gold-pale); }
+
+  .hint {
+    font-size: 11px;
+    color: var(--gold);
+    opacity: 0.5;
+    margin-top: 6px;
+    line-height: 1.6;
+  }
+
+  /* ボタン */
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #1e3d1a 0%, var(--green) 50%, #1e3d1a 100%);
+    color: var(--gold-pale);
+    border: 1px solid rgba(74,138,66,0.5);
+    font-family: 'Shippori Mincho', serif;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.35em;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.3s;
+    margin-top: 8px;
+  }
+
+  .btn::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -60%;
+    width: 40%; height: 200%;
+    background: rgba(255,255,255,0.08);
+    transform: skewX(-20deg);
+    transition: left 0.5s;
+  }
+
+  .btn:hover::before { left: 120%; }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 8px 30px rgba(45,90,39,0.4); }
+  .btn:active { transform: translateY(0); }
+
+  .btn-secondary {
+    background: transparent;
+    border: 1px solid rgba(200,168,75,0.3);
+    color: var(--gold);
+    font-family: 'Noto Serif JP', serif;
+    font-size: 13px;
+    letter-spacing: 0.3em;
+    padding: 12px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+    transition: all 0.3s;
+  }
+
+  .btn-secondary:hover {
+    background: rgba(200,168,75,0.08);
+    border-color: var(--gold);
+  }
+
+  /* ローディング */
+  .loading {
+    display: none;
+    text-align: center;
+    padding: 60px;
+  }
+
+  .loading.active { display: block; }
+
+  .quill-spinner {
+    font-size: 36px;
+    display: block;
+    margin: 0 auto 20px;
+    animation: quill-write 1.5s ease-in-out infinite;
+  }
+
+  @keyframes quill-write {
+    0%, 100% { transform: rotate(-10deg) translateY(0); }
+    50% { transform: rotate(10deg) translateY(-6px); }
+  }
+
+  .loading p {
+    color: var(--gold);
+    font-size: 13px;
+    letter-spacing: 0.3em;
+    opacity: 0.8;
+    line-height: 2;
+  }
+
+  /* 結果 */
+  #result { display: none; animation: fadeUp 0.8s ease; }
+  #result.active { display: block; }
+
+  .result-header {
+    text-align: center;
+    padding: 40px 28px;
+    background: linear-gradient(180deg, rgba(200,168,75,0.1) 0%, transparent 100%);
+    border: 1px solid rgba(200,168,75,0.25);
+    margin-bottom: 20px;
+  }
+
+  .result-header-label {
+    font-size: 10px;
+    letter-spacing: 0.45em;
+    color: var(--gold);
+    opacity: 0.6;
+    margin-bottom: 10px;
+  }
+
+  .result-name {
+    font-family: 'Shippori Mincho', serif;
+    font-size: clamp(22px, 6vw, 36px);
+    font-weight: 800;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    text-shadow: 0 0 30px rgba(200,168,75,0.3);
+  }
+
+  .result-era {
+    font-size: 13px;
+    color: var(--gold-pale);
+    opacity: 0.6;
+    margin-top: 8px;
+    letter-spacing: 0.2em;
+  }
+
+  /* 自分史本文 */
+  .story-card {
+    background: rgba(10,8,6,0.8);
+    border: 1px solid rgba(200,168,75,0.18);
+    padding: 32px;
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  .story-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, transparent, var(--gold), transparent);
+  }
+
+  .story-section-label {
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 0.45em;
+    margin-bottom: 16px;
+    opacity: 0.7;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .story-section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(200,168,75,0.2);
+  }
+
+  .story-text {
+    font-size: 15px;
+    line-height: 2.1;
+    color: rgba(245,233,192,0.88);
+    white-space: pre-wrap;
+  }
+
+  /* コピーボタン */
+  .copy-btn {
+    display: block;
+    width: 100%;
+    padding: 13px;
+    background: rgba(200,168,75,0.1);
+    border: 1px solid rgba(200,168,75,0.35);
+    color: var(--gold);
+    font-family: 'Noto Serif JP', serif;
+    font-size: 13px;
+    letter-spacing: 0.3em;
+    cursor: pointer;
+    margin-top: 14px;
+    transition: all 0.3s;
+  }
+
+  .copy-btn:hover {
+    background: rgba(200,168,75,0.18);
+    border-color: var(--gold);
+  }
+
+  /* LINE CTA */
+  .line-cta {
+    margin-top: 28px;
+    background: linear-gradient(135deg, rgba(0,180,90,0.12), rgba(0,140,70,0.06));
+    border: 1px solid rgba(0,200,100,0.3);
+    padding: 30px 24px;
+    text-align: center;
+  }
+
+  .line-cta-label {
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    color: #06c755;
+    opacity: 0.8;
+    margin-bottom: 10px;
+  }
+
+  .line-cta-title {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--gold-pale);
+    margin-bottom: 8px;
+    line-height: 1.7;
+  }
+
+  .line-cta-sub {
+    font-size: 13px;
+    color: rgba(245,233,192,0.6);
+    line-height: 1.9;
+    margin-bottom: 20px;
+  }
+
+  .line-benefits {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-bottom: 20px;
+    text-align: left;
+  }
+
+  .line-benefit-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: rgba(245,233,192,0.8);
+    padding: 7px 12px;
+    background: rgba(6,199,85,0.07);
+    border-left: 2px solid #06c755;
+  }
+
+  .line-benefit-item span { color: #06c755; }
+
+  .line-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #06c755;
+    color: #fff;
+    text-decoration: none;
+    padding: 15px 32px;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    transition: transform 0.2s, box-shadow 0.3s;
+    border-radius: 2px;
+  }
+
+  .line-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(6,199,85,0.35);
+  }
+
+  .reset-btn {
+    display: block;
+    width: 100%;
+    padding: 13px;
+    background: transparent;
+    border: 1px solid rgba(200,168,75,0.3);
+    color: var(--gold);
+    font-family: 'Noto Serif JP', serif;
+    font-size: 13px;
+    letter-spacing: 0.3em;
+    cursor: pointer;
+    margin-top: 14px;
+    transition: all 0.3s;
+  }
+
+  .reset-btn:hover {
+    background: rgba(200,168,75,0.08);
+    border-color: var(--gold);
+  }
+
+  .footer {
+    text-align: center;
+    margin-top: 48px;
+    opacity: 0.3;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    line-height: 2;
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 500px) {
+    .card { padding: 22px 16px; }
+    .story-card { padding: 22px 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ヘッダー -->
+  <div class="header">
+    <p class="header-deco">✦ MY STORY GENERATOR ✦</p>
+    <h1 class="title-main">自分史ジェネレーター</h1>
+    <p class="title-sub">あなたの物語を、言葉に</p>
+    <div class="header-line">
+      <span></span>
+      <i style="font-style:normal;color:var(--gold);font-size:16px;">✒</i>
+      <span></span>
+    </div>
+    <p class="title-desc">いくつかの質問に答えるだけで<br>あなただけの自分史がブログ記事風に生成されます</p>
+  </div>
+
+  <!-- ステップ表示 -->
+  <div class="steps" id="steps">
+    <div class="step-item">
+      <div class="step-circle active" id="step1">1</div>
+      <div class="step-line" id="line1"></div>
+    </div>
+    <div class="step-item">
+      <div class="step-circle" id="step2">2</div>
+      <div class="step-line" id="line2"></div>
+    </div>
+    <div class="step-item">
+      <div class="step-circle" id="step3">3</div>
+      <div class="step-line" id="line3"></div>
+    </div>
+    <div class="step-item">
+      <div class="step-circle" id="step4">4</div>
+    </div>
+  </div>
+
+  <!-- フォームエリア -->
+  <div id="form-area">
+
+    <!-- STEP 1：基本情報 -->
+    <div class="card" id="card1">
+      <div class="card-title">STEP 1 ✦ あなたのことを教えてください</div>
+      <p class="card-desc">生成する自分史の基本情報です</p>
+
+      <div class="form-group">
+        <label>お名前（ニックネームでもOK）</label>
+        <input type="text" id="q-name" placeholder="例：はるこ、はるのり">
+      </div>
+
+      <div class="form-group">
+        <label>現在の年齢・世代</label>
+        <select id="q-age">
+          <option value="">-- 選んでください --</option>
+          <option value="40代">40代</option>
+          <option value="50代前半">50代前半</option>
+          <option value="50代後半">50代後半</option>
+          <option value="60代">60代</option>
+          <option value="70代以上">70代以上</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>現在のあなたを一言で表すと？</label>
+        <input type="text" id="q-now" placeholder="例：子育て終わり、自分の時間ができた主婦">
+        <p class="hint">職業・役割・状況など、なんでもOKです</p>
+      </div>
+
+      <button class="btn" onclick="goStep(2)">次へ ▶</button>
+    </div>
+
+    <!-- STEP 2：過去の経験 -->
+    <div class="card" id="card2" style="display:none">
+      <div class="card-title">STEP 2 ✦ 人生の転機について</div>
+      <p class="card-desc">あなたの人生を形づくった出来事を教えてください</p>
+
+      <div class="form-group">
+        <label>これまでの人生で一番大変だったことは？</label>
+        <textarea id="q-hard" placeholder="例：離婚、親の介護、仕事を辞めざるを得なかった、子育てで孤独だった…"></textarea>
+        <p class="hint">詳しくなくてOKです。キーワードだけでも大丈夫です</p>
+      </div>
+
+      <div class="form-group">
+        <label>そのとき、どうやって乗り越えましたか？</label>
+        <textarea id="q-overcome" placeholder="例：友人に支えてもらった、本を読み漁った、とにかく時間が解決してくれた…"></textarea>
+      </div>
+
+      <button class="btn" onclick="goStep(3)">次へ ▶</button>
+      <button class="btn-secondary" onclick="goStep(1)">← 戻る</button>
+    </div>
+
+    <!-- STEP 3：今の自分・これから -->
+    <div class="card" id="card3" style="display:none">
+      <div class="card-title">STEP 3 ✦ 今のあなたとこれから</div>
+      <p class="card-desc">現在の気持ちと、これからの夢を聞かせてください</p>
+
+      <div class="form-group">
+        <label>今、自分が得意なこと・好きなことは？</label>
+        <textarea id="q-strength" placeholder="例：話を聞くこと、料理、手芸、人を励ますこと…"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>これからやってみたいこと・夢は？</label>
+        <textarea id="q-dream" placeholder="例：ブログで発信したい、カウンセラーになりたい、旅に出たい…"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>同じ世代の方へ伝えたいことは？</label>
+        <textarea id="q-message" placeholder="例：50代からでも遅くない、自分を責めないで…"></textarea>
+        <p class="hint">あなたの経験から生まれた言葉でOKです</p>
+      </div>
+
+      <button class="btn" onclick="generateStory()">✦ 自分史を生成する ✦</button>
+      <button class="btn-secondary" onclick="goStep(2)">← 戻る</button>
+    </div>
+
+  </div>
+
+  <!-- ローディング -->
+  <div id="loading" class="loading">
+    <span class="quill-spinner">✒️</span>
+    <p>あなたの物語を<br>丁寧に綴っています…</p>
+  </div>
+
+  <!-- 結果 -->
+  <div id="result">
+    <div class="result-header">
+      <p class="result-header-label">✦ あなたの自分史 ✦</p>
+      <div class="result-name" id="res-name"></div>
+      <div class="result-era" id="res-era"></div>
+    </div>
+
+    <div class="story-card">
+      <p class="story-section-label">はじまり</p>
+      <div class="story-text" id="res-intro"></div>
+    </div>
+
+    <div class="story-card">
+      <p class="story-section-label">転機と乗り越えた日々</p>
+      <div class="story-text" id="res-turning"></div>
+    </div>
+
+    <div class="story-card">
+      <p class="story-section-label">今のわたし</p>
+      <div class="story-text" id="res-now"></div>
+    </div>
+
+    <div class="story-card">
+      <p class="story-section-label">同じ時代を生きるあなたへ</p>
+      <div class="story-text" id="res-message"></div>
+    </div>
+
+    <button class="copy-btn" onclick="copyStory()">📋 自分史をコピーする</button>
+
+    <!-- LINE CTA -->
+    <div class="line-cta">
+      <p class="line-cta-label">✦ 公式LINE登録・３大特典 ✦</p>
+      <p class="line-cta-title">ご登録いただくだけで<br>３つ全部、無料でプレゼント🎁</p>
+      <div class="line-benefits">
+        <div class="line-benefit-item"><span>✦</span>GIFT 01　電子書籍「優しい人が、最後に損をする理由」（全9章・約20,000字）</div>
+        <div class="line-benefit-item"><span>✦</span>GIFT 02　ツインレイ判定占い（九星気学×スピリチュアル）</div>
+        <div class="line-benefit-item"><span>✦</span>GIFT 03　自分史ジェネレーター（あなたの物語を言葉に）</div>
+      </div>
+      <p class="line-cta-sub">期間限定・先着順</p>
+      <a class="line-btn" href="https://lin.ee/Q3eOxtm" target="_blank">
+        💬 公式LINEにご登録はこちら
+      </a>
+    </div>
+
+    <button class="reset-btn" onclick="resetAll()">← もう一度作る</button>
+  </div>
+
+  <div class="footer">
+    <p>✦ 自分史ジェネレーター ✦</p>
+    <p>※生成された文章はご自由にお使いください</p>
+  </div>
+</div>
+
+<script>
+let currentStep = 1;
+let storyText = '';
+
+function goStep(n) {
+  // バリデーション
+  if (n === 2) {
+    if (!document.getElementById('q-name').value.trim() ||
+        !document.getElementById('q-age').value ||
+        !document.getElementById('q-now').value.trim()) {
+      alert('すべての項目を入力してください。');
+      return;
+    }
+  }
+  if (n === 3) {
+    if (!document.getElementById('q-hard').value.trim() ||
+        !document.getElementById('q-overcome').value.trim()) {
+      alert('すべての項目を入力してください。');
+      return;
+    }
+  }
+
+  document.getElementById(`card${currentStep}`).style.display = 'none';
+  document.getElementById(`card${n}`).style.display = 'block';
+
+  // ステップ更新
+  document.getElementById(`step${currentStep}`).classList.remove('active');
+  document.getElementById(`step${currentStep}`).classList.add('done');
+  document.getElementById(`step${n}`).classList.add('active');
+  if (currentStep < n) {
+    document.getElementById(`line${currentStep}`)?.classList.add('done');
+  }
+
+  currentStep = n;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function generateStory() {
+  const strength = document.getElementById('q-strength').value.trim();
+  const dream = document.getElementById('q-dream').value.trim();
+  const message = document.getElementById('q-message').value.trim();
+
+  if (!strength || !dream) {
+    alert('得意なことと、これからの夢を入力してください。');
+    return;
+  }
+
+  const name = document.getElementById('q-name').value.trim() || 'わたし';
+  const age = document.getElementById('q-age').value;
+  const now = document.getElementById('q-now').value.trim();
+  const hard = document.getElementById('q-hard').value.trim();
+  const overcome = document.getElementById('q-overcome').value.trim();
+
+  document.getElementById('form-area').style.display = 'none';
+  document.getElementById('steps').style.display = 'none';
+  document.getElementById('loading').classList.add('active');
+
+  const prompt = `あなたは魂に寄り添う自分史作家です。以下の情報をもとに、50代女性の心を深く揺さぶる自分史を書いてください。
+
+重要なお願いがあります。
+入力された情報がたとえ一言・数文字であっても、そこから豊かに想像を膨らませて、400〜500文字の深く感動的な文章を必ず書いてください。
+キーワードから、その人の人生の情景・感情・体験を丁寧に想像して肉付けしてください。
+読んだ人が思わず涙してしまうような、胸の奥に届く文章を目指してください。
+一人称は「わたし」で、まるでその人が自分の言葉で語りかけているような温かさと深みを持たせてください。
+抽象的な言葉より、具体的な情景・感情・体の感覚を丁寧に描写してください。
+50代女性が「これはわたしのことだ」と感じるような共感の言葉を随所に散りばめてください。
+情報が少なくても、50代女性に共通する普遍的な経験や感情を織り交ぜながら、その人らしい物語を作り上げてください。
+
+【名前】${name}
+【年代】${age}
+【現在の状況】${now}
+【一番大変だったこと】${hard}
+【乗り越え方】${overcome}
+【得意なこと・好きなこと】${strength}
+【これからの夢】${dream}
+【伝えたいこと】${message || 'なし'}
+
+以下の4つのセクションを、それぞれ必ず400〜500文字でたっぷりと書いてください。入力情報が少なくても、想像力を最大限に使って必ずこの文字数を書いてください。
+
+【はじまり】
+${name}さんがこれまで歩んできた道のりを、情景描写を交えながら温かく描く。「ああ、こんな時代があったな」と懐かしく、でも誇らしく思えるような文章に。日常の小さな場面を切り取りながら、その人らしさが伝わる書き出しにする。50代女性に共通する懐かしい情景や感情を豊かに描写する。
+
+【転機と乗り越えた日々】
+大変だった経験を、その時の感情・体の感覚・周囲の様子を丁寧に描写しながら綴る。苦しかった日々を正直に書きつつ、それでも前を向いた瞬間の輝きを丁寧に描く。読んでいる人が「わかる、わかる」と涙ぐんでしまうような共感の文章に。情報が少なくても、その言葉から感じ取れる苦労や痛みを豊かに想像して描写する。
+
+【今のわたし】
+あの経験を経て今の${name}さんがどう変わったか、何を大切にしているかを温かく描く。傷を乗り越えたからこそ生まれた強さと優しさ、得意なことや好きなことへの愛情を丁寧に綴る。読んだ人が「こんな自分でよかった」と思えるような肯定感のある文章に。
+
+【同じ時代を生きるあなたへ】
+同じ50代を生きる読者へ、${name}さんの心からのメッセージ。説教ではなく、隣に座って語りかけるような温かさで。「あなたは一人じゃない」「あなたの経験には意味がある」という気持ちが伝わる、読んだ人の背中をそっと押すような言葉で締めくくる。最後の一文は特に心に残る言葉で終わる。
+
+各セクションは【セクション名】で始め、次の行に本文を書いてください。絶対に短くしないでください。`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await response.json();
+    const text = data.content?.[0]?.text || '';
+    storyText = text;
+    renderResult(name, age, text);
+  } catch(e) {
+    renderResult(name, age, '');
+  }
+}
+
+function extractSection(text, key) {
+  const regex = new RegExp(`【${key}】\\s*\\n?([^【]+)`, 's');
+  const m = text.match(regex);
+  return m ? m[1].trim() : '';
+}
+
+function renderResult(name, age, text) {
+  document.getElementById('loading').classList.remove('active');
+
+  document.getElementById('res-name').textContent = `${name} の物語`;
+  document.getElementById('res-era').textContent = `${age} ✦ わたしらしく生きる`;
+
+  document.getElementById('res-intro').textContent =
+    extractSection(text, 'はじまり') || `${name}さんの物語は、日常の小さな積み重ねの中から生まれました。`;
+  document.getElementById('res-turning').textContent =
+    extractSection(text, '転機と乗り越えた日々') || `あの頃の経験が、今のわたしをつくってくれました。`;
+  document.getElementById('res-now').textContent =
+    extractSection(text, '今のわたし') || `今のわたしは、あの頃より少しだけ自分を好きになれています。`;
+  document.getElementById('res-message').textContent =
+    extractSection(text, '同じ時代を生きるあなたへ') || `あなたの経験は、誰かの力になれます。`;
+
+  document.getElementById('result').classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function copyStory() {
+  const sections = ['res-intro','res-turning','res-now','res-message'];
+  const labels = ['【はじまり】','【転機と乗り越えた日々】','【今のわたし】','【同じ時代を生きるあなたへ】'];
+  const name = document.getElementById('res-name').textContent;
+
+  let copy = `${name}\n\n`;
+  sections.forEach((id, i) => {
+    copy += `${labels[i]}\n${document.getElementById(id).textContent}\n\n`;
+  });
+
+  navigator.clipboard.writeText(copy).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = '✦ コピーしました！';
+    setTimeout(() => { btn.textContent = '📋 自分史をコピーする'; }, 2000);
+  });
+}
+
+function resetAll() {
+  document.getElementById('result').classList.remove('active');
+  document.getElementById('steps').style.display = 'flex';
+  document.getElementById('form-area').style.display = 'block';
+  document.getElementById('card1').style.display = 'block';
+  document.getElementById('card2').style.display = 'none';
+  document.getElementById('card3').style.display = 'none';
+  currentStep = 1;
+  ['step1','step2','step3','step4'].forEach((id,i) => {
+    const el = document.getElementById(id);
+    el.classList.remove('active','done');
+    if (i === 0) el.classList.add('active');
+  });
+  ['line1','line2','line3'].forEach(id => {
+    document.getElementById(id)?.classList.remove('done');
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>

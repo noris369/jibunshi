@@ -833,20 +833,55 @@ function extractSection(text, key) {
   return m ? m[1].trim() : '';
 }
 
+function generateStoryText(name, age, now, hard, overcome, strength, dream, message) {
+  const intro = `${name}という名前を、わたしは何度も心の中で呼びかけてきた気がします。
+誰かのために動き続けた日々。気がつけば朝になっていて、気がつけば夜になっていた。そんな毎日を、ただただ懸命に生きてきました。
+${age}という年齢を迎えた今、ふと立ち止まって振り返ってみると、胸の奥にじわりと温かいものが広がってきます。あの頃は必死すぎて気づかなかったけれど、あの小さな積み重ねのひとつひとつが、今のわたしをつくってくれていたのだと。
+${now}——そんな今のわたしがあるのは、たくさんの「あの日」があったから。誰かに認められたくて頑張った日も、誰にも言えずに布団の中で泣いた夜も、全部が、今日のわたしの一部になっています。
+完璧じゃなくていい。うまくいかない日があっていい。それでもここまで歩いてきた。その事実だけで、もう十分すごいことだと、今のわたしは思っています。`;
+
+  const turning = `あの頃のことを思い出すと、今でも胸がきゅっと締め付けられます。
+${hard}——その言葉だけでは到底言い表せないくらい、あの日々はしんどかった。朝、目が覚めるたびに「また今日も」と思って、それでも起き上がって、誰かのために動いていた。自分が傷ついていることにすら、気づく余裕がなかったのかもしれません。
+でも、あの時間の中に、確かな光もありました。${overcome}——そのことが、どれほどわたしを救ってくれたか。誰かの一言が、一冊の本が、あるいはただ時間が流れていくことが、少しずつ凍りついた心を溶かしてくれた。
+乗り越えたというより、気づいたらそこにいた、という感じかもしれません。振り返ると、あの経験がなければ出会えなかった自分がいる。傷ついたからこそ、人の痛みがわかるようになった。あの日々は、消えてほしかった記憶だったけれど、今はそれが自分の一番深いところにある、大切な根っこになっている気がしています。`;
+
+  const nowText = `あの日のわたしが今のわたしを見たら、きっと驚くと思います。
+${strength}——そんなことが好きで、得意で、それをいつの間にか自然にやっている自分がいる。あの頃は「自分には何もない」と思っていたのに、いつの間にか、こんなにたくさんのものを手にしていたんだと、気づかされます。
+傷ついた分だけ、優しくなれる。泣いた分だけ、人の涙がわかる。遠回りした分だけ、景色が豊かに見える。今のわたしにはそう思えます。
+${dream}——そんな夢が今のわたしにはあります。大きな夢じゃなくていい。誰かに笑ってほしい、誰かの役に立ちたい、そのくらいのシンプルな願いが、毎日を前に進ませてくれています。まだまだわたしの物語は続いていく。そう思うと、不思議と胸が温かくなります。`;
+
+  const messageText = `同じ時代を生きているあなたへ、少しだけ話させてください。
+あなたは、十分すぎるくらい頑張ってきた。誰かのために、家族のために、職場のために、ずっとずっと自分を後回しにしてきた。そのことを、わたしは知っています。同じ時代を、同じように生きてきたから。
+「もっとうまくやれたはずだ」と思う夜があるかもしれない。「あの時、違う選択をしていたら」と考える朝があるかもしれない。でも、どうかそんな自分を責めないでほしい。あなたはあの時、精一杯だった。それだけで十分です。
+${message ? message + '\n\n' : ''}これからのあなたの毎日に、小さな喜びがたくさん降り注ぎますように。そして、あなたが自分自身のことを、もう少しだけ好きになれる日が来ますように。あなたの物語は、まだ終わっていない。これからが、いちばん美しい章かもしれません。`;
+
+  return { intro, turning, nowText, messageText };
+}
+
 function renderResult(name, age, text) {
   document.getElementById('loading').classList.remove('active');
+
+  const now = document.getElementById('q-now').value.trim() || 'わたしらしく生きている';
+  const hard = document.getElementById('q-hard').value.trim() || 'あの日々';
+  const overcome = document.getElementById('q-overcome').value.trim() || '前を向くことを選んだこと';
+  const strength = document.getElementById('q-strength').value.trim() || '人を思いやること';
+  const dream = document.getElementById('q-dream').value.trim() || '自分らしく生きていくこと';
+  const message = document.getElementById('q-message').value.trim() || '';
 
   document.getElementById('res-name').textContent = `${name} の物語`;
   document.getElementById('res-era').textContent = `${age} ✦ わたしらしく生きる`;
 
-  document.getElementById('res-intro').textContent =
-    extractSection(text, 'はじまり') || `${name}さんの物語は、日常の小さな積み重ねの中から生まれました。`;
-  document.getElementById('res-turning').textContent =
-    extractSection(text, '転機と乗り越えた日々') || `あの頃の経験が、今のわたしをつくってくれました。`;
-  document.getElementById('res-now').textContent =
-    extractSection(text, '今のわたし') || `今のわたしは、あの頃より少しだけ自分を好きになれています。`;
-  document.getElementById('res-message').textContent =
-    extractSection(text, '同じ時代を生きるあなたへ') || `あなたの経験は、誰かの力になれます。`;
+  const aiIntro = extractSection(text, 'はじまり');
+  const aiTurning = extractSection(text, '転機と乗り越えた日々');
+  const aiNow = extractSection(text, '今のわたし');
+  const aiMessage = extractSection(text, '同じ時代を生きるあなたへ');
+
+  const story = generateStoryText(name, age, now, hard, overcome, strength, dream, message);
+
+  document.getElementById('res-intro').textContent = aiIntro || story.intro;
+  document.getElementById('res-turning').textContent = aiTurning || story.turning;
+  document.getElementById('res-now').textContent = aiNow || story.nowText;
+  document.getElementById('res-message').textContent = aiMessage || story.messageText;
 
   document.getElementById('result').classList.add('active');
   window.scrollTo({ top: 0, behavior: 'smooth' });
